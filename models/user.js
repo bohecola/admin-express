@@ -17,6 +17,16 @@ const userSchema = new Schema({
     default: ''
   },
 
+  desc: {
+    type: String,
+    default: ''
+  },
+
+  avatar: {
+    type: String,
+    default: ''
+  },
+
   roles: {
     type: [Schema.Types.ObjectId],
     ref: 'Role'

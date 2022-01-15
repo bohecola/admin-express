@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // 连接数据库
-main().catch((err) => console.log('数据可连接失败', err))
+main().catch((err) => console.log('数据库连接失败', err))
 
 async function main() {
   await mongoose.connect('mongodb://localhost:27017/admin-demo');

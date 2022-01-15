@@ -26,6 +26,13 @@ const menuSchema = new Schema({
     required: true
   },
 
+  // 节点路由
+  path: {
+    type: String,
+    unique: true,
+    required: true
+  },
+
   // 菜单图标
   icon: {
     type: String,

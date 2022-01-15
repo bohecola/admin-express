@@ -1,10 +1,13 @@
 const express = require('express');
+const cors = require('cors');
 const router = require('./routers');
 const checkLogin = require('./middlewares/check-login');
 
 const app = express();
 
 app.use(express.json());
+
+app.use(cors());
 
 app.use('/api', (req, res, next) => {
   // 登录请求直接通过
