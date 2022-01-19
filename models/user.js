@@ -30,17 +30,7 @@ const userSchema = new Schema({
   roles: {
     type: [Schema.Types.ObjectId],
     ref: 'Role'
-  },
-
-  createAt: {
-    type: Date,
-    default: Date.now
-  },
-
-  updateAt: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true });
 
 module.exports = userSchema;

@@ -8,7 +8,7 @@ const roleSchema = new Schema({
   },
 
   // 角色描述
-  description: {
+  desc: {
     type: String,
     default: ''
   },
@@ -35,18 +35,6 @@ const roleSchema = new Schema({
     type: Number,
     default: 0
   },
-
-  // 创建时间
-  createAt: {
-    type: Date,
-    default: Date.now
-  },
-
-  // 更新时间
-  updateAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+}, { timestamps: true });
 
 module.exports = roleSchema;

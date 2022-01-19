@@ -8,28 +8,14 @@ const menuSchema = new Schema({
     required: true
   },
 
-  // 菜单描述
-  description: {
-    type: String,
-    default: ''
-  },
-
-  // 上级菜单
-  parentId: {
-    type: Schema.Types.ObjectId
-  },
-
-  // 前端名称（标识）
-  unique: {
-    type: String,
-    unique: true,
-    required: true
-  },
-
   // 节点路由
   path: {
-    type: String,
-    unique: true,
+    type: String
+  },
+  
+  // 菜单类型
+  type: {
+    type: Number,  // 0 目录, 1 菜单
     required: true
   },
 
@@ -37,6 +23,13 @@ const menuSchema = new Schema({
   icon: {
     type: String,
     default: ''
+  },
+
+  // 上级菜单id
+  parentId: {
+    type: Schema.Types.ObjectId,
+    default: null,
+    ref: 'Menu'
   },
 
   // 是否显示
@@ -55,19 +48,7 @@ const menuSchema = new Schema({
   sort: {
     type: Number,
     default: 0
-  },
-
-  // 创建时间
-  createAt: {
-    type: Date,
-    default: Date.now
-  },
-
-  // 更新时间
-  updateAt: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true });
 
 module.exports = menuSchema;
