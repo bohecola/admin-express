@@ -2,8 +2,19 @@ const { User } = require('../models');
 
 exports.list = async (req, res, next) => {
   try {
-    const ret = await User.find();
-    res.status(200).json(ret);
+    await User.find()
+      .populate({ path: 'roles' })
+      .lean()
+      .exec((err, doc) => {
+        if (err) res.status(500).json({ message: err });
+        const ret = doc.map(userItem => {
+          const userRoles = userItem.roles.map(role => role.name);
+          delete userItem.roles;
+          userItem.roleName = userRoles.join();
+          return userItem;
+        });
+        res.status(200).json(ret);
+      });
   } catch (err) {
     next(err)
   }

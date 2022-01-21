@@ -4,13 +4,20 @@ const roleSchema = new Schema({
   // 角色名称
   name: {
     type: String,
+    unique: true,
+    required: true
+  },
+
+  label: {
+    type: String,
+    unique: true,
     required: true
   },
 
   // 角色描述
-  desc: {
+  remark: {
     type: String,
-    default: ''
+    default: null
   },
 
   // 角色菜单权限
@@ -24,17 +31,6 @@ const roleSchema = new Schema({
   //   type: [Schema.Types.ObjectId],
   //   ref: 'Resource'
   // }
-
-  /**
-   * 是否启用
-   * 0：禁用
-   * 1：启用
-   */
-
-  status: {
-    type: Number,
-    default: 0
-  },
 }, { timestamps: true });
 
 module.exports = roleSchema;
