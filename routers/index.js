@@ -8,7 +8,9 @@ const router = express.Router();
 
 router
   .post('/login', commonController.login)
-  .get('/permissions', commonController.permissions);
+  .get('/permissions', commonController.permissions)
+  .get('/person', commonController.person)
+  .post('/personUpdate', commonController.personUpdate)
 
 router.get('/users', userController.list)
   .get('/users/:id', userController.one)

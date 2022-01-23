@@ -2,6 +2,7 @@ const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const { tokenSecret } = require('../config');
 
+// 用户登录
 exports.login = async (req, res, next) => {
   try {
     const ret = await User.findOne({ username: req.body.username });
@@ -21,11 +22,11 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign({
       userId: ret._id
     }, tokenSecret, {
-      expiresIn: '1d'
+      expiresIn: '7d'
     })
 
     const data = ret.toJSON();
-    delete data.password;
+    // delete data.password;
 
     res.status(200).json({
       token,
@@ -36,6 +37,7 @@ exports.login = async (req, res, next) => {
   }
 };
 
+// 用户权限
 exports.permissions = async (req, res, next) => {
   try {
     // 先拿到当前登录用户：req.user
@@ -51,6 +53,26 @@ exports.permissions = async (req, res, next) => {
     
     res.status(200).json(user);
   } catch (err) {
+    next(err);
+  }
+}
+
+// 用户信息
+exports.person = async (req, res, next) => {
+  try {
+    res.status(200).json(req.user);
+  } catch(err) {
+    next(err);
+  }
+}
+
+// 更新用户信息
+exports.personUpdate = async (req, res, next) => {
+  try {
+    Object.assign(req.user, req.body);
+    req.user.save();
+    res.status(200).json(req.user);
+  } catch(err) {
     next(err);
   }
 }
