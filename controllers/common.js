@@ -37,21 +37,39 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// 用户权限
-exports.permissions = async (req, res, next) => {
+// 用户权限菜单
+exports.permmenu = async (req, res, next) => {
   try {
-    // 先拿到当前登录用户：req.user
-    // 获取当前登录用户的角色
-    // 获取所有角色的权限
+    // 当前登录用户 -> 角色 -> 权限
+    const user = await req.user
+      .populate({
+        path: 'roles',
+        populate: {
+          path: 'menus'
+        }
+      });
+    // 用户的所有角色
+    const { roles } = user;
+    // 所有角色拥有的菜单集合
+    const menus = roles.reduce((menus, role) => {
+      menus.push(...role.menus);
+      return menus;
+    }, []);
 
-    const user = await req.user.populate({
-      path: 'roles',
-      populate: {
-        path: 'menus'
+    // 去掉重复的菜单
+    for (let i=0; i<menus.length; i++) {
+      for (let j=i+1; j<menus.length; j++) {
+        if (menus[i]._id === menus[j]._id) {
+          menus.splice(j, 1);
+          // 删除重复元素后，后面元素会向前进一位，所以需要 j-- 一次
+          // 以确保下一次比较的是[被删除元素]后一位的元素
+          j--; 
+        }
       }
-    });
-    
-    res.status(200).json(user);
+    }
+    // 最终的权限菜单
+    const permMenu = menus;
+    res.status(200).json(permMenu);
   } catch (err) {
     next(err);
   }

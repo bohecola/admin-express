@@ -8,7 +8,7 @@ const router = express.Router();
 
 router
   .post('/login', commonController.login)
-  .get('/permissions', commonController.permissions)
+  .get('/permmenu', commonController.permmenu)
   .get('/person', commonController.person)
   .post('/personUpdate', commonController.personUpdate)
 

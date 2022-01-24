@@ -32,6 +32,12 @@ const menuSchema = new Schema({
     ref: 'Menu'
   },
 
+  // 视图文件路径
+  viewPath: {
+    type: String,
+    default: null
+  },
+
   // 是否显示
   hidden: {
     type: Boolean,
