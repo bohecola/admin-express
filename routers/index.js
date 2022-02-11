@@ -3,6 +3,9 @@ const commonController = require('../controllers/common');
 const userController = require('../controllers/user');
 const roleController = require('../controllers/role');
 const menuController = require('../controllers/menu');
+const articleController = require('../controllers/article');
+const categoryController = require('../controllers/category');
+const tagController = require('../controllers/tag');
 
 const router = express.Router();
 
@@ -29,5 +32,23 @@ router.get('/menus', menuController.list)
   .post('/menus', menuController.create)
   .put('/menus/:id', menuController.update)
   .delete('/menus/:id', menuController.delete);
+
+router.get('/articles', articleController.list)
+  .get('/articles/:id', articleController.one)
+  .post('/articles', articleController.create)
+  .put('/articles/:id', articleController.update)
+  .delete('/articles/:id', articleController.delete);
+
+router.get('/category', categoryController.list)
+  .get('/category/:id', categoryController.one)
+  .post('/category', categoryController.create)
+  .put('/category/:id', categoryController.update)
+  .delete('/category/:id', categoryController.delete);
+
+router.get('/tag', tagController.list)
+  .get('/tag/:id', tagController.one)
+  .post('/tag', tagController.create)
+  .put('/tag/:id', tagController.update)
+  .delete('/tag/:id', tagController.delete);
 
 module.exports = router;

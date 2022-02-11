@@ -11,5 +11,8 @@ async function main() {
 module.exports = {
   User: mongoose.model('User', require('./user')),
   Role: mongoose.model('Role', require('./role')),
-  Menu: mongoose.model('Menu', require('./menu'))
+  Menu: mongoose.model('Menu', require('./menu')),
+  Article: mongoose.model('Article', require('./article')),
+  Category: mongoose.model('Category', require('./category')),
+  Tag: mongoose.model('Tag', require('./tag')),
 }
