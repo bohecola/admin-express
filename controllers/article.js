@@ -4,14 +4,14 @@ exports.list = async (req, res, next) => {
   try {
     await Article.find()
       .populate('category', 'name')
-      .populate('tags', 'name')
+      .populate('tags', 'name color')
       .populate('author', 'username')
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
         const ret = doc.map(item => {
           item.category = item.category.name;
-          item.tags = item.tags.map(tag => tag.name);
+          item.tags = item.tags.map(tag => ({ name: tag.name, color: tag.color }));
           item.author = item.author.username;
           return item;
         })
