@@ -12,6 +12,11 @@ const tagSchema = new Schema({
   color: {
     type: String,
     required: true
+  },
+
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, { timestamps: true });
 

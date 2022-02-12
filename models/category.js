@@ -6,6 +6,11 @@ const categorySchema = new Schema({
     type: String,
     unique: true,
     required: true
+  },
+
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, { timestamps: true });
 
