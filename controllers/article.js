@@ -5,14 +5,17 @@ exports.list = async (req, res, next) => {
     await Article.find()
       .populate('category', 'name')
       .populate('tags', 'name color')
-      .populate('author', 'username')
+      .populate('author', 'username avatar')
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
         const ret = doc.map(item => {
           item.category = item.category.name;
           item.tags = item.tags.map(tag => ({ name: tag.name, color: tag.color }));
-          item.author = item.author.username;
+          item.author = {
+            username: item.author.username,
+            avatar: item.author.avatar
+          };
           return item;
         })
         res.status(200).json(ret);
