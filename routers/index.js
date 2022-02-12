@@ -1,4 +1,5 @@
 const express = require('express');
+const uploadController = require('../controllers/upload');
 const commonController = require('../controllers/common');
 const userController = require('../controllers/user');
 const roleController = require('../controllers/role');
@@ -13,7 +14,10 @@ router
   .post('/login', commonController.login)
   .get('/permmenu', commonController.permmenu)
   .get('/person', commonController.person)
-  .post('/personUpdate', commonController.personUpdate)
+  .post('/personUpdate', commonController.personUpdate);
+
+router
+  .post('/uploadFile', uploadController.uploadFile);
 
 router.get('/users', userController.list)
   .get('/users/:id', userController.one)
@@ -45,10 +49,10 @@ router.get('/category', categoryController.list)
   .put('/category/:id', categoryController.update)
   .delete('/category/:id', categoryController.delete);
 
-router.get('/tag', tagController.list)
-  .get('/tag/:id', tagController.one)
-  .post('/tag', tagController.create)
-  .put('/tag/:id', tagController.update)
-  .delete('/tag/:id', tagController.delete);
+router.get('/tags', tagController.list)
+  .get('/tags/:id', tagController.one)
+  .post('/tags', tagController.create)
+  .put('/tags/:id', tagController.update)
+  .delete('/tags/:id', tagController.delete);
 
 module.exports = router;

@@ -68,7 +68,7 @@ exports.permmenu = async (req, res, next) => {
       }
     }
     // 最终的权限菜单
-    const permMenu = menus;
+    const permMenu = menus.sort((a, b) => a.sort - b.sort);
     res.status(200).json(permMenu);
   } catch (err) {
     next(err);

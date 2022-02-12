@@ -1,12 +1,17 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer')
+const path = require('path');
+
 const router = require('./routers');
 const checkLogin = require('./middlewares/check-login');
+const upload = multer({ dest: './public/upload' });
 
 const app = express();
 
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(upload.any());
 app.use(express.json());
-
 app.use(cors());
 
 app.use('/api', (req, res, next) => {

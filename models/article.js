@@ -10,8 +10,7 @@ const articleSchema = new Schema({
   
   // 文章内容
   content: {
-    type: String,
-    required: true
+    type: String
   },
 
   // 文章标签

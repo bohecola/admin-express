@@ -4,16 +4,16 @@ exports.list = async (req, res, next) => {
   try {
     await Menu.find()
       .populate({ path: 'parentId' })
+      .sort({ sort: 1 })
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
-        const ret = doc.map(menuItem => {
-          const parent = menuItem.parentId;
-          if (parent !== null) {
-            menuItem.parentId = parent._id;
-            menuItem.parentName = parent.name;
+        const ret = doc.map(item => {
+          if (item.parentId !== null) {
+            item.parentId = item.parentId._id;
+            item.parentName = item.parentId.name;
           }
-          return menuItem;
+          return item;
         });
         res.status(200).json(ret);
       });
@@ -29,14 +29,11 @@ exports.one = async (req, res, next) => {
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
-
         if (doc.parentId !== null) {
-          const parent = doc.parentId;
-          doc.parentId = parent._id;
-          doc.parentName = parent.name;
+          doc.parentId = doc.parentId._id;
+          doc.parentName = doc.parentId.name;
         }
-        const ret = doc;
-        res.status(200).json(ret);
+        res.status(200).json(doc);
       });
   } catch (err) {
     next(err)
