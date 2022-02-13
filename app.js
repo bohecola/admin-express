@@ -15,8 +15,9 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api', (req, res, next) => {
+  const whitePath = req.path === '/login' || req.path.indexOf('weblog') > -1;
   // 登录请求直接通过
-  if (req.path === '/login') {
+  if (whitePath) {
     return next();
   }
 

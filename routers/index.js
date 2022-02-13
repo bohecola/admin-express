@@ -8,7 +8,16 @@ const articleController = require('../controllers/article');
 const categoryController = require('../controllers/category');
 const tagController = require('../controllers/tag');
 
+const weblogController = require('../controllers/weblog');
+
 const router = express.Router();
+
+router
+  .get('/weblog/me', weblogController.me)
+  .get('/weblog/articles', weblogController.articleList)
+  .get('/weblog/articles/:id', weblogController.articleOne)
+  .get('/weblog/tags', weblogController.tagList)
+  .get('/weblog/category', weblogController.categoryList);
 
 router
   .post('/login', commonController.login)
