@@ -1,4 +1,4 @@
-const { Article } = require('../models');
+const { Article, Category, Tag } = require('../models');
 
 exports.list = async (req, res, next) => {
   try {
@@ -38,6 +38,10 @@ exports.create = async (req, res, next) => {
   try {
     req.body.author = req.user._id;
     const ret = await new Article(req.body).save();
+    await Category.updateOne(
+      { _id: { $in: ret.category } },
+      { $push: { 'articles': ret._id } }
+    ).exec();
     res.status(201).json(ret);
   } catch (err) {
     next(err)
@@ -48,6 +52,10 @@ exports.update = async (req, res, next) => {
   try {
     const ret = await Article.findById(req.params.id);
     Object.assign(ret, req.body);
+    // await Category.updateOne(
+    //   { _id: { $in: ret.category } },
+    //   { $addToSet: { 'articles': ret._id } }
+    // ).exec();
     await ret.save();
     res.status(201).json(ret);
   } catch (err) {
@@ -57,7 +65,12 @@ exports.update = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
+    const ret = await Article.findById(req.params.id);
     await Article.findByIdAndRemove(req.params.id);
+    await Category.updateOne(
+      { _id: { $in: ret.category } },
+      { $pull: { 'articles': ret._id } }
+      ).exec();
     res.status(204).end();
   } catch (err) {
     next(err)

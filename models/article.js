@@ -1,25 +1,25 @@
 const { Schema } = require('mongoose');
 
 const articleSchema = new Schema({
-  // 文章标题
+  // 标题
   title: {
     type: String,
     unique: true,
     required: true
   },
   
-  // 文章内容
+  // 内容
   content: {
     type: String
   },
 
-  // 文章标签
+  // 标签
   tags: {
     type: [Schema.Types.ObjectId],
     ref: 'Tag'
   },
 
-  // 文章分类
+  // 目录
   category: {
     type: Schema.Types.ObjectId,
     ref: 'Category'

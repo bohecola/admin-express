@@ -8,9 +8,16 @@ const categorySchema = new Schema({
     required: true
   },
 
+  // 创建人
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User'
+  },
+
+  // 文章集合
+  articles: {
+    type: [Schema.Types.ObjectId],
+    ref: 'Article'
   }
 }, { timestamps: true });
 

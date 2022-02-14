@@ -3,8 +3,8 @@ const { User, Article, Category, Tag } = require('../models');
 exports.me = async function (req, res, next) {
   try {
     const ret = await User.findOne(
-      { name: 'bohecola' },
-      'username desc avatar -_id'
+      { username: 'bohecola' },
+      'name desc avatar -_id'
     );
     res.status(200).json({
       code: '200',
