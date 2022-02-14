@@ -3,7 +3,6 @@ const fs = require('fs');
 
 exports.uploadFile = async (req, res, next) => {
   try {
-    console.log(req.files);
     const file = req.files[0];
     const pathArray = req.files[0].path.split('\\');
     pathArray.pop();

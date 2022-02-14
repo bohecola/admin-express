@@ -22,6 +22,7 @@ exports.articleList = async function (req, res, next) {
       .populate('category', 'name')
       .populate('tags', 'name color')
       .populate('author', 'username')
+      .sort({ createdAt: -1 })
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
@@ -30,7 +31,7 @@ exports.articleList = async function (req, res, next) {
           item.tags = item.tags.map(tag => ({ name: tag.name, color: tag.color }));
           item.author = item.author.username;
           return item;
-        })
+        });
         res.status(200).json({
           code: '200',
           message: 'success',
