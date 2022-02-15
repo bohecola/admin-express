@@ -21,4 +21,27 @@ const categorySchema = new Schema({
   }
 }, { timestamps: true });
 
+categorySchema.methods.addArticleToCategory = function (articleId) {
+  const articleIndex = this.articles.findIndex(id => {
+    return id.toString() === articleId.toString();
+  });
+
+  // 插入文章id相同时
+  if (articleIndex >= 0) {
+    return false;
+  }
+
+  this.articles.push(articleId);
+
+  return this.save();
+}
+
+categorySchema.methods.deleteArticleFromCategory = function (articleId) {
+  this.articles = this.articles.filter(id => {
+    return id.toString() !== articleId.toString();
+  });
+
+  return this.save();
+}
+
 module.exports = categorySchema;

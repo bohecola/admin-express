@@ -37,4 +37,14 @@ const articleSchema = new Schema({
   }
 }, { timestamps: true });
 
+articleSchema.methods.clearCategory = function() {
+  delete this.category;
+  return this.save();
+}
+
+articleSchema.methods.removeTag = function(tagId) {
+  this.tags = this.tags.filter(id => id.toString() !== tagId.toString())
+  return this.save();
+}
+
 module.exports = articleSchema;

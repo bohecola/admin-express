@@ -27,4 +27,27 @@ const tagSchema = new Schema({
   }
 }, { timestamps: true });
 
+tagSchema.methods.addArticleToTag = function (articleId) {
+  const articleIndex = this.articles.findIndex(id => {
+    return id.toString() === articleId.toString();
+  });
+
+  // 插入文章id相同时
+  if (articleIndex >= 0) {
+    return false;
+  }
+
+  this.articles.push(articleId);
+
+  return this.save();
+}
+
+tagSchema.methods.deleteArticleFromTag = function (articleId) {
+  this.articles = this.articles.filter(id => {
+    return id.toString() !== articleId.toString();
+  });
+
+  return this.save();
+}
+
 module.exports = tagSchema;

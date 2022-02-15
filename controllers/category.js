@@ -1,9 +1,10 @@
-const { Category } = require('../models');
+const { Category, Article } = require('../models');
 
 exports.list = async (req, res, next) => {
   try {
     await Category.find()
       .populate('creator', 'username avatar')
+      .populate('articles', 'title -_id')
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
@@ -12,6 +13,9 @@ exports.list = async (req, res, next) => {
             username: item.creator.username,
             avatar: item.creator.avatar
           };
+          if (item.articles) {
+            item.articles = item.articles.map(article => article.title);
+          }
           return item;
         });
         res.status(200).json(ret);
@@ -53,6 +57,11 @@ exports.update = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
+    const ret = await Category.findById(req.params.id);
+    await Article.updateMany(
+      { _id: { $in: ret.articles } },
+      { $unset: { category: '' } }
+    )
     await Category.findByIdAndRemove(req.params.id);
     res.status(204).end();
   } catch (err) {
