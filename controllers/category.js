@@ -58,6 +58,7 @@ exports.update = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   try {
     const ret = await Category.findById(req.params.id);
+    // 目录删除时，所关联的文章中目录也一并移除
     await Article.updateMany(
       { _id: { $in: ret.articles } },
       { $unset: { category: '' } }

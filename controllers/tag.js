@@ -58,6 +58,7 @@ exports.update = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   try {
     const ret = await Tag.findById(req.params.id);
+    // 标签删除时，所关联文章中对应的标签也一并移除
     await Article.updateMany(
       { _id: { $in: ret.articles } },
       { $pull: { tags: ret._id } }

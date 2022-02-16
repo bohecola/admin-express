@@ -47,11 +47,13 @@ exports.create = async (req, res, next) => {
     const ret = await new Article(req.body).save();
 
     if (ret.category) {
+      // 向目录中添加对应的文章
       const category = await Category.findById(ret.category);
       category.addArticleToCategory(ret._id);
     }
 
     if (ret.tags) {
+      // 向标签中添加对应的文章
       const tags = await Tag.find({ _id: { $in: ret.tags } });
       tags.forEach(async (tag) => {
         await tag.addArticleToTag(ret._id);
@@ -75,10 +77,11 @@ exports.update = async (req, res, next) => {
 
     if (postCategoryId && postCategoryId !== oldCategoryId) {
       if (oldCategoryId) {
+        // 旧目录中移除对应的文章
         const oldCategory = await Category.findById(oldCategoryId);
         await oldCategory.deleteArticleFromCategory(ret._id);
       }
-      
+      // 新目录中添加对应的文章
       const newCategory = await Category.findById(postCategoryId);
       await newCategory.addArticleToCategory(ret._id);
     }
@@ -92,10 +95,12 @@ exports.update = async (req, res, next) => {
       const deletedTags = Array.from(deletedTagsSet);
       const addedTags = Array.from(addedTagsSet);
 
+      // 新标签中添加对应的文章
       const added = await Tag.find({ _id: { $in: addedTags } });
       added.forEach(async (tag) => {
         await tag.addArticleToTag(ret._id);
       });
+      // 旧标签中移除对应的文章
       const deleted = await Tag.find({ _id: { $in: deletedTags } });
       deleted.forEach(async (tag) => {
         await tag.deleteArticleFromTag(ret._id);
@@ -115,11 +120,13 @@ exports.delete = async (req, res, next) => {
     const ret = await Article.findById(req.params.id);
 
     if (ret.category) {
+      // 目录中移除对应的文章
       const category = await Category.findById(ret.category);
       category.deleteArticleFromCategory(ret._id);
     }
 
     if (ret.tags) {
+      // 标签中移除对应的文章
       const tags = await Tag.find({ _id: { $in: ret.tags } });
       tags.forEach(async (tag) => {
         await tag.deleteArticleFromTag(ret._id);
