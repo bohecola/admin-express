@@ -68,10 +68,8 @@ exports.articleOne = async function (req, res, next) {
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
 
-        doc.category = doc.category.name;
-        doc.tags = doc.tags.map(tag => ({ name: tag.name, color: tag.color }));
         doc.author = doc.author.username;
-
+        
         res.status(200).json({
           code: '200',
           message: 'success',
