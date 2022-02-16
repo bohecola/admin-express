@@ -18,7 +18,22 @@ exports.me = async function (req, res, next) {
 
 exports.articleList = async function (req, res, next) {
   try {
-    await Article.find()
+    const {
+      tag,
+      category
+    } = req.query
+
+    const filter = {};
+
+    if (tag) {
+      filter.tags = [tag];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    await Article.find(filter)
       .populate('category', 'name')
       .populate('tags', 'name color')
       .populate('author', 'username')

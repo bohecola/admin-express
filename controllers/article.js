@@ -1,12 +1,27 @@
 const { Article, Category, Tag } = require('../models');
-const { post } = require('../models/user');
 
 exports.list = async (req, res, next) => {
   try {
-    await Article.find()
+    const {
+      tag,
+      category
+    } = req.query
+
+    const filter = {};
+
+    if (tag) {
+      filter.tags = [tag];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    await Article.find(filter)
       .populate('category', 'name')
       .populate('tags', 'name color')
       .populate('author', 'username avatar')
+      .sort({ createdAt: -1 })
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
