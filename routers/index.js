@@ -17,7 +17,8 @@ router
   .get('/weblog/articles', weblogController.articleList)
   .get('/weblog/articles/:id', weblogController.articleOne)
   .get('/weblog/tags', weblogController.tagList)
-  .get('/weblog/category', weblogController.categoryList);
+  .get('/weblog/category', weblogController.categoryList)
+  .get('/weblog/archive', weblogController.archiveList);
 
 router
   .post('/login', commonController.login)

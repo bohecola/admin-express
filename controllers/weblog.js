@@ -1,3 +1,4 @@
+const { Mongoose } = require('mongoose');
 const { User, Article, Category, Tag } = require('../models');
 
 exports.me = async function (req, res, next) {
@@ -26,13 +27,12 @@ exports.articleList = async function (req, res, next) {
     const filter = {};
 
     if (tag) {
-      filter.tags = [tag];
+      filter.tags = tag;
     }
 
     if (category) {
       filter.category = category;
     }
-
     await Article.find(filter)
       .populate('category', 'name')
       .populate('tags', 'name color')
@@ -53,6 +53,133 @@ exports.articleList = async function (req, res, next) {
           data: ret
         });
       })
+  } catch (err) {
+    next(err)
+  }
+}
+
+exports.archiveList = async function (req, res, next) {
+  try {
+    await Article.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: { name: 1, _id: 0 }
+            }
+          ],
+          as: 'author',
+        }
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: { name: 1, _id: 0 }
+            }
+          ],
+          as: 'category',
+        }
+      },
+      {
+        $lookup: {
+          from: 'tags',
+          localField: 'tags',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: { name: 1, color: 1, _id: 0 }
+            }
+          ],
+          as: 'tags',
+        }
+      },
+      { $unwind: '$author' },
+      { $unwind: '$category' },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          category: 1,
+          tags: 1,
+          author: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      },
+      {
+        $group: {
+          _id: { 
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' },
+            _id: '$_id',
+            title: '$title',
+            category: '$category',
+            tags: '$tags',
+            author: '$author',
+            createdAt: '$createdAt',
+            updatedAt: '$updatedAt'
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: -1 }
+      },
+      {
+        $group: {
+          _id: {
+            year: '$_id.year',
+            month: '$_id.month',
+          },
+          daily: { 
+            $push: { 
+              _id: '$_id._id',
+              title: '$_id.title',
+              category: '$_id.category',
+              tags: '$_id.tags',
+              author: '$_id.author',
+              createdAt: '$_id.createdAt',
+              updatedAt: '$_id.updatedAt',
+              day: '$_id.day' 
+            }
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id.year',
+          yearList: {
+            $push: { month: '$_id.month', monthList: '$daily' }
+          }
+        }
+      }
+    ]).exec((err, doc) => {
+      if (err) res.status(500).json({ message: err });
+      doc.map(item => {
+        item.year = item._id;
+        delete item._id;
+        item.yearList.map(monthItem => {
+          monthItem.monthList.map(article => {
+            article.author = article.author.name;
+            article.category = article.category.name;
+          })
+        })
+        return item;
+      });
+      res.status(200).json({
+        code: '200',
+        message: 'success',
+        data: doc
+      });
+    });
   } catch (err) {
     next(err)
   }
