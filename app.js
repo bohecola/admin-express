@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const history = require('connect-history-api-fallback');
 const path = require('path');
 
 const router = require('./routers');
@@ -8,6 +9,7 @@ const checkLogin = require('./middlewares/check-login');
 const upload = multer({ dest: './public/upload' });
 
 const app = express();
+app.use(history());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static('./public/dist'));
