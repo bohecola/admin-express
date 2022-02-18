@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer')
+const multer = require('multer');
 const path = require('path');
 
 const router = require('./routers');
@@ -10,6 +10,8 @@ const upload = multer({ dest: './public/upload' });
 const app = express();
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.static('./public/dist'));
+
 app.use(upload.any());
 app.use(express.json());
 app.use(cors());
