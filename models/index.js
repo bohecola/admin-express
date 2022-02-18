@@ -4,7 +4,13 @@ const mongoose = require('mongoose');
 main().catch((err) => console.log('数据库连接失败', err))
 
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/admin-demo');
+  await mongoose.connect('mongodb://localhost:27017/admin-demo', {
+    authSource: 'admin',
+    auth: {
+      username: 'admin-demo',
+      password: '123456'
+    }
+  });
   console.log('数据库连接成功');
 }
 
