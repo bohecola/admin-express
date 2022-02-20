@@ -1,15 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-// const history = require('connect-history-api-fallback');
 const path = require('path');
+const https = require('https');
 
 const router = require('./routers');
 const checkLogin = require('./middlewares/check-login');
 const upload = multer({ dest: './public/upload' });
 
+const fs = require('fs');
+
+//同步读取密钥和签名证书
+const options = {
+  key: fs.readFileSync(path.join(__dirname, './keys/server.key')),
+  cert: fs.readFileSync(path.join(__dirname, './keys/server.crt'))
+};
+
 const app = express();
-// app.use(history());
+const httpsServer = https.createServer(options, app);
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static('./public/dist'));
@@ -38,6 +46,6 @@ app.use((err, req, res, next) => {
   })
 });
 
-app.listen(3000, () => {
-  console.log('running http://localhost:3000/');
+httpsServer.listen(443, () => {
+  console.log('running https://localhost:443/');
 });
