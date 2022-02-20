@@ -12,8 +12,8 @@ const fs = require('fs');
 
 //同步读取密钥和签名证书
 const options = {
-  key: fs.readFileSync(path.join(__dirname, './keys/server.key')),
-  cert: fs.readFileSync(path.join(__dirname, './keys/server.crt'))
+  key: fs.readFileSync(path.join(__dirname, './keys/canday.site.key')),
+  cert: fs.readFileSync(path.join(__dirname, './keys/canday.site_bundle.crt'))
 };
 
 const app = express();
