@@ -29,11 +29,12 @@ exports.one = async (req, res, next) => {
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
-        if (doc.parentId !== null) {
-          doc.parentId = doc.parentId._id;
-          doc.parentName = doc.parentId.name;
+        const ret = JSON.parse(JSON.stringify(doc));
+        if (ret.parentId !== null) {
+          ret.parentId = doc.parentId._id;
+          ret.parentName = doc.parentId.name;
         }
-        res.status(200).json(doc);
+        res.status(200).json(ret);
       });
   } catch (err) {
     next(err)
