@@ -5,6 +5,7 @@ exports.uploadFile = async (req, res, next) => {
   try {
     const file = req.files[0];
     const pathArray = req.files[0].path.split('\\');
+    console.log(pathArray);
     pathArray.pop();
     console.log(req.files[0]);
 
