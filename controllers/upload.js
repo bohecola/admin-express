@@ -6,6 +6,7 @@ exports.uploadFile = async (req, res, next) => {
     const file = req.files[0];
     const pathArray = req.files[0].path.split('\\');
     pathArray.pop();
+    console.log(req.files[0]);
 
     const newPath = pathArray.join('/') + '/' + file.originalname;
     const url = 'https://canday.site:3000/public/upload/' + newPath;
