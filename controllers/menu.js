@@ -24,7 +24,7 @@ exports.list = async (req, res, next) => {
 
 exports.one = async (req, res, next) => {
   try {
-    let ret = await Menu.findById(req.params.id)
+    await Menu.findById(req.params.id)
       .populate({ path: 'parentId' })
       .lean()
       .exec((err, doc) => {
