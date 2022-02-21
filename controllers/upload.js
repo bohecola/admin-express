@@ -4,20 +4,12 @@ const fs = require('fs');
 exports.uploadFile = async (req, res, next) => {
   try {
     const file = req.files[0];
-    const pathArray = req.files[0].path.split('/');
-    pathArray.pop();
 
-    const newPath = pathArray.join('/') + '/' + file.originalname;
-    const url = 'https://canday.site:3000/public/upload/' + newPath;
+    const url = 'https://canday.site:3000/' + file.path;
 
     const originalname = req.files[0].originalname;
-    const fileName = originalname.split('.').shift();
 
-    fs.rename(req.files[0].path, newPath, function (err) {
-      if (err) res.send('上传失败'); 
-
-      res.status(200).json({ url, fileName });
-    });
+    res.status(200).json({ url, name: originalname });
   } catch(err) {
     next(err);
   }
