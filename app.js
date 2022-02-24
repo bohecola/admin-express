@@ -3,6 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const https = require('https');
+const http = require('http');
 
 const router = require('./routers');
 const checkLogin = require('./middlewares/check-login');
@@ -18,6 +19,7 @@ const options = {
 
 const app = express();
 const httpsServer = https.createServer(options, app);
+const httpServer = http.createServer({}, app);
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static('./public/dist'));
@@ -48,4 +50,8 @@ app.use((err, req, res, next) => {
 
 httpsServer.listen(3000, () => {
   console.log('running https://localhost:3000/');
+});
+
+httpServer.listen(3001, () => {
+  console.log('running http://localhost:3001/');
 });
