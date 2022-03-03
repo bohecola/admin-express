@@ -11,7 +11,7 @@ const upload = multer({ dest: './public/upload' });
 
 const fs = require('fs');
 
-//同步读取密钥和签名证书
+// 同步读取密钥和签名证书
 const options = {
   key: fs.readFileSync(path.join(__dirname, './keys/canday.site.key')),
   cert: fs.readFileSync(path.join(__dirname, './keys/canday.site_bundle.crt'))
@@ -45,7 +45,7 @@ app.use('/api', router);
 app.use((err, req, res, next) => {
   res.status(500).json({
     message: err.message
-  })
+  });
 });
 
 httpsServer.listen(3000, () => {

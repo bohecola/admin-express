@@ -1,4 +1,3 @@
-const { Mongoose } = require('mongoose');
 const { User, Article, Category, Tag } = require('../models');
 
 exports.me = async function (req, res, next) {
@@ -21,36 +20,45 @@ exports.articleList = async function (req, res, next) {
   try {
     const {
       tag,
-      category
-    } = req.query
+      category,
+      page = 1,
+      limit = 15,
+    } = req.query;
 
-    const filter = {};
+    const query = {};
 
     if (tag) {
-      filter.tags = tag;
+      query.tags = tag;
     }
 
     if (category) {
-      filter.category = category;
+      query.category = category;
     }
-    await Article.find(filter)
-      .populate('category', 'name')
-      .populate('tags', 'name color')
-      .populate('author', 'username')
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec((err, doc) => {
-        if (err) res.status(500).json({ message: err });
-        const ret = doc.map(item => {
+
+    const options = {
+      sort: { date: -1 },
+      select: '-content',
+      populate: [
+        { path: 'author', select: 'username -_id' },
+        { path: 'tags', select: 'name color -_id' },
+        { path: 'category', select: 'name -_id' }
+      ],
+      leanWithId: false,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    };
+
+    await Article.paginate(query, options)
+      .then(function (ret) {
+        ret.docs.map(item => {
           item.category = item.category.name;
-          item.tags = item.tags.map(tag => ({ name: tag.name, color: tag.color }));
           item.author = item.author.username;
-          return item;
         });
+
         res.status(200).json({
           code: '200',
           message: 'success',
-          data: ret
+          date: ret
         });
       })
   } catch (err) {

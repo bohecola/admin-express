@@ -1,6 +1,3 @@
-const path = require('path');
-const fs = require('fs');
-
 exports.uploadFile = async (req, res, next) => {
   try {
     const file = req.files[0];

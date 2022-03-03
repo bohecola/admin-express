@@ -1,4 +1,19 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
+mongoosePaginate.paginate.options = {
+  lean: true,
+  page: 1,
+  limit: 20
+};
+
+const User = require('./user');
+const Role = require('./role');
+const Menu = require('./menu');
+const Article = require('./article');
+const Category = require('./category');
+const Tag = require('./tag');
+
+Article.plugin(mongoosePaginate);
 
 // 连接数据库
 main().catch((err) => console.log('数据库连接失败', err))
@@ -15,10 +30,10 @@ async function main() {
 }
 
 module.exports = {
-  User: mongoose.model('User', require('./user')),
-  Role: mongoose.model('Role', require('./role')),
-  Menu: mongoose.model('Menu', require('./menu')),
-  Article: mongoose.model('Article', require('./article')),
-  Category: mongoose.model('Category', require('./category')),
-  Tag: mongoose.model('Tag', require('./tag')),
+  User: mongoose.model('User', User),
+  Role: mongoose.model('Role', Role),
+  Menu: mongoose.model('Menu', Menu),
+  Article: mongoose.model('Article', Article),
+  Category: mongoose.model('Category', Category),
+  Tag: mongoose.model('Tag', Tag),
 }
