@@ -36,7 +36,7 @@ exports.articleList = async function (req, res, next) {
     }
 
     const options = {
-      sort: { date: -1 },
+      sort: { createdAt: -1 },
       select: '-__v -content',
       populate: [
         { path: 'author', select: 'username -_id' },

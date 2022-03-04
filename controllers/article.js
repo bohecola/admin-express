@@ -21,7 +21,7 @@ exports.list = async (req, res, next) => {
       .populate('category', 'name')
       .populate('tags', 'name color')
       .populate('author', 'username avatar')
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .lean()
       .exec((err, doc) => {
         if (err) res.status(500).json({ message: err });
