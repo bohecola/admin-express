@@ -37,7 +37,7 @@ exports.articleList = async function (req, res, next) {
 
     const options = {
       sort: { date: -1 },
-      select: '-content',
+      select: '-__v -content',
       populate: [
         { path: 'author', select: 'username -_id' },
         { path: 'tags', select: 'name color -_id' },
@@ -58,7 +58,7 @@ exports.articleList = async function (req, res, next) {
         res.status(200).json({
           code: '200',
           message: 'success',
-          date: ret
+          data: ret
         });
       })
   } catch (err) {
@@ -195,7 +195,7 @@ exports.archiveList = async function (req, res, next) {
 
 exports.articleOne = async function (req, res, next) {
   try {
-    await Article.findById(req.params.id)
+    await Article.findById(req.params.id, '-__v')
       .populate('category', 'name')
       .populate('tags', 'name color')
       .populate('author', 'username')
@@ -218,7 +218,7 @@ exports.articleOne = async function (req, res, next) {
 
 exports.tagList = async function (req, res, next) {
   try {
-    const ret = await Tag.find();
+    const ret = await Tag.find({}, {_id: 1, name: 1, color: 1});
     res.status(200).json({
       code: '200',
       message: 'success',
@@ -231,7 +231,15 @@ exports.tagList = async function (req, res, next) {
 
 exports.categoryList = async function (req, res, next) {
   try {
-    const ret = await Category.find();
+    const ret = await Category.aggregate([
+      { 
+        $project: {
+          _id: 1,
+          name: 1,
+          count: { $size: '$articles' } 
+        }
+      }
+    ]);
     res.status(200).json({
       code: '200',
       message: 'success',
