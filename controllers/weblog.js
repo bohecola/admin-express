@@ -139,7 +139,7 @@ exports.archiveList = async function (req, res, next) {
         }
       },
       {
-        $sort: { _id: -1 }
+        $sort: { createdAt: -1 }
       },
       {
         $group: {
