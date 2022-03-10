@@ -19,20 +19,20 @@ exports.me = async function (req, res, next) {
 exports.articleList = async function (req, res, next) {
   try {
     const {
-      tag,
-      category,
+      tagId,
+      categoryId,
       page = 1,
       limit = 15,
     } = req.query;
 
     const query = {};
 
-    if (tag) {
-      query.tags = tag;
+    if (tagId) {
+      query.tags = tagId;
     }
 
-    if (category) {
-      query.category = category;
+    if (categoryId) {
+      query.category = categoryId;
     }
 
     const options = {
