@@ -15,15 +15,17 @@ const Tag = require('./tag');
 
 Article.plugin(mongoosePaginate);
 
+const { DB_SERVER, DB_NAME, DB_USER, DB_SECRET } = require('../config/db');
+
 // 连接数据库
 main().catch((err) => console.log('数据库连接失败', err))
 
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/admin-demo', {
+  await mongoose.connect(`mongodb://${DB_SERVER}:27017/${DB_NAME}`, {
     authSource: 'admin',
     auth: {
-      username: 'admin-demo',
-      password: '123456'
+      username: DB_USER,
+      password: DB_SECRET
     }
   });
   console.log('数据库连接成功');
