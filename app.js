@@ -21,7 +21,7 @@ const app = express();
 const httpsServer = https.createServer(options, app);
 const httpServer = http.createServer({}, app);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use(upload.any());
 app.use(express.json());
