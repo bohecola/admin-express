@@ -12,8 +12,8 @@
       "merge_logs": true,
       "instances": 0,
       "exec_mode": "cluster",
-      "error_file": "/var/log/nodejs/admin-demo-api/err.log",
-      "out_file": "/var/log/nodejs/admin-demo-api/out.log",
+      "error_file": "./logs/err.log",
+      "out_file": "./logs/out.log",
       "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
       "env": {
         "NODE_ENV": "production",
