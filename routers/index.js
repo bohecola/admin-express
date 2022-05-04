@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-router.use(require('./common'));
+router.use(require('./auth'));
 router.use(require('./upload'));
 router.use(require('./user'));
 router.use(require('./role'));
