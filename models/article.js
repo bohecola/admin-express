@@ -7,30 +7,25 @@ const articleSchema = new Schema({
     unique: true,
     required: true
   },
-  
   // 内容
   content: {
     type: String
   },
-
   // 标签
   tags: {
     type: [Schema.Types.ObjectId],
     ref: 'Tag'
   },
-
   // 目录
   category: {
     type: Schema.Types.ObjectId,
     ref: 'Category'
   },
-
   // 状态
   status: {
     type: Number,
     default: 0  // 草稿0 发布1
   },
-
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User'

@@ -13,7 +13,12 @@ const Article = require('./article');
 const Category = require('./category');
 const Tag = require('./tag');
 
+User.plugin(mongoosePaginate);
+Role.plugin(mongoosePaginate);
+Menu.plugin(mongoosePaginate);
 Article.plugin(mongoosePaginate);
+Category.plugin(mongoosePaginate);
+Tag.plugin(mongoosePaginate);
 
 const { DB_SERVER, DB_NAME, DB_USER, DB_SECRET } = require('../config/db');
 

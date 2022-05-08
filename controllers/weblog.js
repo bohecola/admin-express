@@ -48,25 +48,23 @@ exports.articleList = function (req, res) {
         limit,
       } = req.query;
   
-      const query = {};
-      if (tagId) query.tags = tagId;
-      if (categoryId) query.category = categoryId;
-  
-      const options = {
-        sort: { createdAt: -1 },
-        select: '-__v -content',
-        populate: [
-          { path: 'author', select: 'username -_id' },
-          { path: 'tags', select: 'name color -_id' },
-          { path: 'category', select: 'name -_id' }
-        ],
-        leanWithId: false,
-        page: parseInt(page),
-        limit: parseInt(limit)
-      };
+      const filter = {};
+      if (tagId) filter.tags = tagId;
+      if (categoryId) filter.category = categoryId;
 
       Article
-        .paginate(query, options)
+        .paginate(filter, {
+          sort: { createdAt: -1 },
+          select: '-__v -content',
+          populate: [
+            { path: 'author', select: 'username -_id' },
+            { path: 'tags', select: 'name color -_id' },
+            { path: 'category', select: 'name -_id' }
+          ],
+          leanWithId: false,
+          page: parseInt(page),
+          limit: parseInt(limit)
+        })
         .then(ret => {
           ret.docs.map(item => {
             item.category = item.category.name;

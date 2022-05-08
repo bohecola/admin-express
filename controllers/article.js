@@ -1,87 +1,127 @@
 const { Article, Category, Tag } = require('../models');
+const Common = require('./common');
+const Constant = require('../constant');
+const { forEach } = require('async');
 
-exports.list = async (req, res, next) => {
-  try {
-    const {
-      tag,
-      category
-    } = req.query
+exports.list = async (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
-    const filter = {};
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.query, ['page', 'limit'], cb);
+    },
+    query: ['checkParams', (result, cb) => {
+      const { tags, category, page, limit } = req.query;
 
-    if (tag) {
-      filter.tags = [tag];
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    await Article.find(filter)
-      .populate('category', 'name')
-      .populate('tags', 'name color')
-      .populate('author', 'username avatar')
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec((err, doc) => {
-        if (err) res.status(500).json({ message: err });
-        const ret = doc.map(item => {
-          if (item.category) {
-            item.category = item.category.name;
-          }
-          if (item.tags) {
-            item.tags = item.tags.map(tag => ({ name: tag.name, color: tag.color }));
-          }
-          if (item.author) {
-            item.author = {
-              username: item.author.username,
-              avatar: item.author.avatar
-            };
-          }
-          return item;
+      const filter = {};
+      if (tags) filter.tags = tags;
+      if (category) filter.category = category;
+      Article
+        .paginate(filter, {
+          sort: { createdAt: -1 },
+          populate: [
+            { path: 'category', select: 'name' },
+            { path: 'tags', select: 'name color' },
+            { path: 'author', select: 'username avatar' },
+          ],
+          lean: true,
+          leanWithId: true,
+          page: parseInt(page),
+          limit: parseInt(limit)
         })
-        res.status(200).json(ret);
-      });
-  } catch (err) {
-    next(err);
-  }
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.one = async (req, res, next) => {
-  try {
-    const ret = await Article.findById(req.params.id);
-    res.status(200).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.one = async (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    query: cb => {
+      Article
+        .findById(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR)
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.create = async (req, res, next) => {
-  try {
-    req.body.author = req.user._id;
-    const ret = await new Article(req.body).save();
+exports.create = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
-    if (ret.category) {
-      // 向目录中添加对应的文章
-      const category = await Category.findById(ret.category);
-      category.addArticleToCategory(ret._id);
-    }
+  let tasks = {
+    add: cb => {
+      req.body.author = req.user._id;
+      new Article(req.body)
+        .save()
+        .then(ret => {
+          resObj.data = ret;
+          cb(null, resObj.data);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    },
+    updateRef: ['add', (results, cb) => {
+      const { _id: articleId, category, tags } = results.add;
+      if(category) {
+        Category
+          .findById(category)
+          .then(ret => {
+            ret.addArticleToCategory(articleId);
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      if(tags) {
+        Tag
+          .find({ _id: { $in: tags } })
+          .then(ret => {
+            ret.forEach(tag => tag.addArticleToTag(articleId));
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      cb(null);
+    }]
+  };
 
-    if (ret.tags) {
-      // 向标签中添加对应的文章
-      const tags = await Tag.find({ _id: { $in: ret.tags } });
-      tags.forEach(async (tag) => {
-        await tag.addArticleToTag(ret._id);
-      })
-    }
-
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+  Common.autoFn(tasks, res, resObj);
 }
 
 exports.update = async (req, res, next) => {
+  // const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  // let tasks = {
+  //   add: cb => {
+      
+  //   }
+  // };
+
+  // Common.autoFn(tasks, res, resObj);
   try {
     const ret = await Article.findById(req.params.id);
     const postCategoryId = req.body.category;
@@ -131,6 +171,15 @@ exports.update = async (req, res, next) => {
 }
 
 exports.delete = async (req, res, next) => {
+  // const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  // let tasks = {
+  //   add: cb => {
+      
+  //   }
+  // };
+
+  // Common.autoFn(tasks, res, resObj);
   try {
     const ret = await Article.findById(req.params.id);
 
