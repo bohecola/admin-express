@@ -1,7 +1,6 @@
 const { Article, Category, Tag } = require('../models');
 const Common = require('./common');
 const Constant = require('../constant');
-const { forEach } = require('async');
 
 exports.list = async (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
