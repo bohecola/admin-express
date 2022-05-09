@@ -1,60 +1,132 @@
 const { User } = require('../models');
+const Common = require('./common');
+const Constant = require('../constant');
 
-exports.list = async (req, res, next) => {
-  try {
-    await User.find()
-      .populate({ path: 'roles' })
-      .lean()
-      .exec((err, doc) => {
-        if (err) res.status(500).json({ message: err });
-        const ret = doc.map(userItem => {
-          const userRoles = userItem.roles.map(role => role.name);
-          delete userItem.roles;
-          userItem.roleName = userRoles.join();
-          return userItem;
+
+exports.list = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.query, ['page', 'limit'], cb);
+    },
+    query: ['checkParams', (results, cb) => {
+      const { page, limit } = req.query;
+
+      const filter = {};
+
+      User
+        .paginate(filter, {
+          sort: { createdAt: -1 },
+          populate: { path: 'roles', select: 'name -_id' },
+          lean: true,
+          leanWithId: false,
+          page: parseInt(page),
+          limit: parseInt(limit)
+        })
+        .then(ret => {
+          ret.docs.forEach(item => {
+            item.roleName = item.roles.map(role => role.name).join(',');
+            delete item.roles;
+          });
+
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
         });
-        res.status(200).json(ret);
-      });
-  } catch (err) {
-    next(err)
-  }
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.one = async (req, res, next) => {
-  try {
-    const ret = await User.findById(req.params.id);
-    res.status(200).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.one = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    query: cb => {
+      User
+        .findById(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.create = async (req, res, next) => {
-  try {
-    const ret = await new User(req.body).save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.create = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    add: cb => {
+      new User(req.body)
+        .save()
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.update = async (req, res, next) => {
-  try {
-    const ret = await User.findById(req.params.id);
-    Object.assign(ret, req.body);
-    await ret.save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.update = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    update: cb => {
+      User
+        .findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          { new: true }
+        )
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.delete = async (req, res, next) => {
-  try {
-    await User.findByIdAndRemove(req.params.id);
-    res.status(204).end();
-  } catch (err) {
-    next(err)
-  }
-}
+exports.delete = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
+  let tasks = {
+    remove: cb => {
+      User
+        .findByIdAndRemove(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}

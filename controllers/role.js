@@ -1,49 +1,125 @@
 const { Role } = require('../models');
+const Common = require('./common');
+const Constant = require('../constant');
 
-exports.list = async (req, res, next) => {
-  try {
-    const ret = await Role.find();
-    res.status(200).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.list = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.query, ['page', 'limit'], cb);
+    },
+    query: ['checkParams', (results, cb) => {
+      const { page, limit } = req.query;
+
+      const filter = {};
+
+      Role
+        .paginate(filter, {
+          sort: { createdAt: -1 },
+          lean: true,
+          leanWithId: false,
+          page: parseInt(page),
+          limit: parseInt(limit)
+        })
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.one = async (req, res, next) => {
-  try {
-    const ret = await Role.findById(req.params.id);
-    res.status(200).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.one = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    query: cb => {
+      Role
+        .findById(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.create = async (req, res, next) => {
-  try {
-    const ret = await new Role(req.body).save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.create = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    add: cb => {
+      new Role(req.body)
+        .save()
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.update = async (req, res, next) => {
-  try {
-    const ret = await Role.findById(req.params.id);
-    Object.assign(ret, req.body);
-    await ret.save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+exports.update = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    update: cb => {
+      Role
+        .findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          { new: true }
+        )
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.delete = async (req, res, next) => {
-  try {
-    await Role.findByIdAndRemove(req.params.id);
-    res.status(204).end();
-  } catch (err) {
-    next(err)
-  }
-}
+exports.delete = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
+  let tasks = {
+    remove: cb => {
+      Role
+        .findByIdAndRemove(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}
