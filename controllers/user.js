@@ -3,7 +3,7 @@ const Common = require('./common');
 const Constant = require('../constant');
 
 
-exports.list = (req, res) => {
+exports.page = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {

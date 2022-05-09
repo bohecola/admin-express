@@ -2,7 +2,7 @@ const { Article, Category, Tag } = require('../models');
 const Common = require('./common');
 const Constant = require('../constant');
 
-exports.list = (req, res) => {
+exports.page = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {
@@ -168,7 +168,7 @@ exports.update = (req, res) => {
           cb(Constant.DEFAULT_ERROR);
         });
     }],
-    updateRef: ['update', (results, cb) => {
+    addRef: ['update', (results, cb) => {
       const { update } = results;
       if(update?.category) {
         Category

@@ -6,25 +6,16 @@ exports.list = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {
-    checkParams: cb => {
-      Common.checkParams(req.query, ['page', 'limit'], cb);
-    },
-    query: ['checkParams', (results, cb) => {
-      const { page, limit } = req.query;
-
+    query: (cb) => {
       const filter = {};
 
       Menu
-        .paginate(filter, {
-          sort: { createdAt: -1 },
-          populate: { path: 'parentId' },
-          lean: true,
-          leanWithId: false,
-          page: parseInt(page),
-          limit: parseInt(limit)
-        })
+        .find(filter)
+        .populate({ path: 'parentId' })
+        .sort({ createdAt: -1 })
+        .lean()
         .then(ret => {
-          ret.docs.forEach(item => {
+          ret.forEach(item => {
             if (item.parentId !== null) {
               item.parentName = item.parentId.name;
               item.parentId = item.parentId._id;
@@ -37,7 +28,7 @@ exports.list = (req, res) => {
           console.log(err);
           cb(Constant.DEFAULT_ERROR);
         });
-    }]
+    }
   };
 
   Common.autoFn(tasks, res, resObj);

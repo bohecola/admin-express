@@ -2,7 +2,7 @@ const { Category, Article } = require('../models');
 const Common = require('./common');
 const Constant = require('../constant');
 
-exports.list = (req, res) => {
+exports.page = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {
@@ -19,7 +19,7 @@ exports.list = (req, res) => {
           sort: { createdAt: -1 },
           populate: [
             { path: 'creator', select: 'username avatar' },
-            { path: 'articles', select: 'title -_id' }
+            { path: 'articles', select: 'title' }
           ],
           lean: true,
           leanWithId: false,
@@ -36,6 +36,30 @@ exports.list = (req, res) => {
         });
     }]
   };
+
+  Common.autoFn(tasks, res, resObj);
+}
+
+exports.list = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    query: cb => {
+      const filter = {};
+      Category
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .lean()
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  }
 
   Common.autoFn(tasks, res, resObj);
 }

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const articleController = require('../controllers/article');
 
-router.get('/articles', articleController.list)
+router.get('/articles', articleController.page)
   .get('/articles/:id', articleController.one)
   .post('/articles', articleController.create)
   .put('/articles/:id', articleController.update)

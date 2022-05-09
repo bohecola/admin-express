@@ -28,6 +28,12 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api', (req, res, next) => {
+  if (req.body) {
+    for (const key in req.body) {
+      if(req.body[key] === '') req.body[key] = null;
+    }
+  }
+
   const whitePath = req.path === '/login' || req.path.indexOf('weblog') > -1;
   // 登录请求直接通过
   if (whitePath) {
