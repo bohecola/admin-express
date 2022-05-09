@@ -119,7 +119,7 @@ exports.update = (req, res) => {
     },
     update: ['checkParams', (results, cb) => {
       req.body.creator = req.user._id;
-      Category
+      Tag
         .findByIdAndUpdate(
           req.params.id,
           req.body,

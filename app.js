@@ -6,7 +6,7 @@ const https = require('https');
 const http = require('http');
 
 const router = require('./routers');
-const checkLogin = require('./middlewares/check-login');
+const auth = require('./middlewares/auth');
 const upload = multer({ dest: './public/upload' });
 
 const fs = require('fs');
@@ -41,7 +41,7 @@ app.use('/api', (req, res, next) => {
   }
 
   // 非登录请求，令牌验证
-  checkLogin()(req, res, next);
+  auth(req, res, next);
 });
 
 app.use('/api', router);
