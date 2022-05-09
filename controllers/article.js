@@ -2,7 +2,7 @@ const { Article, Category, Tag } = require('../models');
 const Common = require('./common');
 const Constant = require('../constant');
 
-exports.list = async (req, res) => {
+exports.list = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {
@@ -24,7 +24,7 @@ exports.list = async (req, res) => {
             { path: 'author', select: 'username avatar' },
           ],
           lean: true,
-          leanWithId: true,
+          leanWithId: false,
           page: parseInt(page),
           limit: parseInt(limit)
         })
@@ -42,7 +42,7 @@ exports.list = async (req, res) => {
   Common.autoFn(tasks, res, resObj);
 }
 
-exports.one = async (req, res) => {
+exports.one = (req, res) => {
   const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
   let tasks = {
@@ -80,24 +80,24 @@ exports.create = (req, res) => {
           cb(Constant.DEFAULT_ERROR);
         });
     },
-    updateRef: ['add', (results, cb) => {
-      const { _id: articleId, category, tags } = results.add;
-      if(category) {
+    addRef: ['add', (results, cb) => {
+      const { add } = results.add;
+      if(add?.category) {
         Category
-          .findById(category)
+          .findById(add.category)
           .then(ret => {
-            ret.addArticleToCategory(articleId);
+            ret.addArticleToCategory(add._id);
           })
           .catch(err => {
             console.log(err);
             cb(Constant.DEFAULT_ERROR);
           });
       }
-      if(tags) {
+      if(add?.tags) {
         Tag
-          .find({ _id: { $in: tags } })
+          .find({ _id: { $in: add.tags } })
           .then(ret => {
-            ret.forEach(tag => tag.addArticleToTag(articleId));
+            ret.forEach(tag => tag.addArticleToTag(add._id));
           })
           .catch(err => {
             console.log(err);
@@ -111,94 +111,138 @@ exports.create = (req, res) => {
   Common.autoFn(tasks, res, resObj);
 }
 
-exports.update = async (req, res, next) => {
-  // const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+exports.update = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
-  // let tasks = {
-  //   add: cb => {
-      
-  //   }
-  // };
-
-  // Common.autoFn(tasks, res, resObj);
-  try {
-    const ret = await Article.findById(req.params.id);
-    const postCategoryId = req.body.category;
-    const oldCategoryId = ret.category ? ret.category.toString() : null;
-
-    const postTags = req.body.tags;
-    const oldTags = ret.tags ? ret.tags.map(tag => tag.toString()) : [];
-
-    if (postCategoryId && postCategoryId !== oldCategoryId) {
-      if (oldCategoryId) {
-        // 旧目录中移除对应的文章
-        const oldCategory = await Category.findById(oldCategoryId);
-        await oldCategory.deleteArticleFromCategory(ret._id);
+  let tasks = {
+    query: cb => {
+      Article
+        .findById(req.params.id)
+        .then(ret => {
+          cb(null, ret);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        })
+    },
+    removeRef: ['query', (results, cb) => {
+      const { query } = results;
+      if(query?.category) {
+        Category
+          .findById(query.category)
+          .then(ret => {
+            ret.deleteArticleFromCategory(query._id);
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
       }
-      // 新目录中添加对应的文章
-      const newCategory = await Category.findById(postCategoryId);
-      await newCategory.addArticleToCategory(ret._id);
-    }
+      if(query?.tags) {
+        Tag
+          .find({ _id: { $in: query.tags } })
+          .then(ret => {
+            ret.forEach(tag => tag.deleteArticleFromTag(query._id));
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      cb(null);
+    }],
+    update: ['removeRef', (results, cb) => {
+      Article
+        .findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          { new: true }
+        )
+        .then(ret => {
+          resObj.data = ret;
+          cb(null, ret);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }],
+    updateRef: ['update', (results, cb) => {
+      const { update } = results;
+      if(update?.category) {
+        Category
+          .findById(update.category)
+          .then(ret => {
+            ret.addArticleToCategory(update._id);
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      if(update?.tags) {
+        Tag
+          .find({ _id: { $in: update.tags } })
+          .then(ret => {
+            ret.forEach(tag => tag.addArticleToTag(update._id));
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      cb(null);
+    }]
+  };
 
-    if (postTags) {
-      const postTagsSet = new Set(postTags);
-      const oldTagsSet = new Set(oldTags);
-      const deletedTagsSet = new Set([...oldTagsSet].filter(x => !postTagsSet.has(x)));
-      const addedTagsSet = new Set([...postTagsSet].filter(x => !oldTagsSet.has(x)));
-
-      const deletedTags = Array.from(deletedTagsSet);
-      const addedTags = Array.from(addedTagsSet);
-
-      // 新标签中添加对应的文章
-      const added = await Tag.find({ _id: { $in: addedTags } });
-      added.forEach(async (tag) => {
-        await tag.addArticleToTag(ret._id);
-      });
-      // 旧标签中移除对应的文章
-      const deleted = await Tag.find({ _id: { $in: deletedTags } });
-      deleted.forEach(async (tag) => {
-        await tag.deleteArticleFromTag(ret._id);
-      });
-    }
-    
-    Object.assign(ret, req.body);
-    await ret.save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
+  Common.autoFn(tasks, res, resObj);
 }
 
-exports.delete = async (req, res, next) => {
-  // const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+exports.delete = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
 
-  // let tasks = {
-  //   add: cb => {
-      
-  //   }
-  // };
+  let tasks = {
+    remove: cb => {
+      Article
+        .findByIdAndRemove(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null, ret);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    },
+    removeRef: ['remove', (results, cb) => {
+      const { remove } = results;
+    
+      if(remove?.category) {
+        Category
+          .findById(remove.category)
+          .then(ret => {
+            ret.deleteArticleFromCategory(remove._id)
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      if(remove?.tags) {
+        Tag
+          .find({ _id: { $in: remove.tags } })
+          .then(ret => {
+            ret.forEach(tag => tag.deleteArticleFromTag(remove._id))
+          })
+          .catch(err => {
+            console.log(err);
+            cb(Constant.DEFAULT_ERROR);
+          });
+      }
+      cb(null);
+    }]
+  };
 
-  // Common.autoFn(tasks, res, resObj);
-  try {
-    const ret = await Article.findById(req.params.id);
-
-    if (ret.category) {
-      // 目录中移除对应的文章
-      const category = await Category.findById(ret.category);
-      category.deleteArticleFromCategory(ret._id);
-    }
-
-    if (ret.tags) {
-      // 标签中移除对应的文章
-      const tags = await Tag.find({ _id: { $in: ret.tags } });
-      tags.forEach(async (tag) => {
-        await tag.deleteArticleFromTag(ret._id);
-      });
-    }
-
-    await Article.findByIdAndRemove(req.params.id);
-    res.status(204).end();
-  } catch (err) {
-    next(err)
-  }
+  Common.autoFn(tasks, res, resObj);
 }

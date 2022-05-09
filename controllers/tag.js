@@ -1,71 +1,151 @@
 const { Tag, Article } = require('../models');
+const Common = require('./common');
+const Constant = require('../constant');
 
-exports.list = async (req, res, next) => {
-  try {
-    await Tag.find()
-      .populate('creator', 'username avatar')
-      .populate('articles', 'title -_id')
-      .lean()
-      .exec((err, doc) => {
-        if (err) res.status(500).json({ message: err });
-        const ret = doc.map(item => {
-          item.creator = {
-            username: item.creator.username,
-            avatar: item.creator.avatar
-          };
-          if (item.articles) {
-            item.articles = item.articles.map(article => article.title);
-          }
-          return item;
+exports.list = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.query, ['page', 'limit'], cb);
+    },
+    query: ['checkParams', (results, cb) => {
+      const { page, limit } = req.query;
+
+      const filter = {};
+
+      Tag
+        .paginate(filter, {
+          sort: { createdAt: -1 },
+          populate: [
+            { path: 'creator', select: 'username avatar' },
+            { path: 'articles', select: 'title -_id' }
+          ],
+          lean: true,
+          leanWithId: false,
+          page: parseInt(page),
+          limit: parseInt(limit)
+        })
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
         });
-        res.status(200).json(ret);
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}
+
+exports.one = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    query: cb => {
+      Tag
+        .findById(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}
+
+exports.create = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.body, ['name'], cb);
+    },
+    add: ['checkParams', (results, cb) => {
+      req.body.creator = req.user._id;
+      new Tag(req.body)
+        .save()
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}
+
+exports.update = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    checkParams: cb => {
+      Common.checkParams(req.body, ['name'], cb);
+    },
+    update: ['checkParams', (results, cb) => {
+      req.body.creator = req.user._id;
+      Category
+        .findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          { new: true }
+        )
+        .then(ret => {
+          resObj.data = ret;
+          cb(null);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    }]
+  };
+
+  Common.autoFn(tasks, res, resObj);
+}
+
+exports.delete = (req, res) => {
+  const resObj = Common.clone(Constant.DEFAULT_SUCCESS);
+
+  let tasks = {
+    remove: cb => {
+      Tag
+        .findByIdAndRemove(req.params.id)
+        .then(ret => {
+          resObj.data = ret;
+          cb(null, ret);
+        })
+        .catch(err => {
+          console.log(err);
+          cb(Constant.DEFAULT_ERROR);
+        });
+    },
+    removeRef: ['remove', (results, cb) => {
+      const { remove } = results;
+      Article.updateMany(
+        { _id: { $in: remove?.articles } },
+        { $pull: { tags: ret._id } }
+      )
+      .then(() => {
+        cb(null);
+      })
+      .catch(err => {
+        console.log(err);
+        cb(Constant.DEFAULT_ERROR);
       });
-  } catch (err) {
-    next(err);
-  }
-}
+    }],
+  };
 
-exports.one = async (req, res, next) => {
-  try {
-    const ret = await Tag.findById(req.params.id);
-    res.status(200).json(ret);
-  } catch (err) {
-    next(err)
-  }
-}
-
-exports.create = async (req, res, next) => {
-  try {
-    req.body.creator = req.user._id;
-    const ret = await new Tag(req.body).save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
-}
-
-exports.update = async (req, res, next) => {
-  try {
-    const ret = await Tag.findById(req.params.id);
-    Object.assign(ret, req.body);
-    await ret.save();
-    res.status(201).json(ret);
-  } catch (err) {
-    next(err)
-  }
-}
-
-exports.delete = async (req, res, next) => {
-  try {
-    const ret = await Tag.findById(req.params.id);
-    // 标签删除时，所关联文章中对应的标签也一并移除
-    await Article.updateMany(
-      { _id: { $in: ret.articles } },
-      { $pull: { tags: ret._id } }
-    )
-    await Tag.findByIdAndRemove(req.params.id);
-    res.status(204).end();
-  } catch (err) {
-    next(err)
-  }
+  Common.autoFn(tasks, res, resObj);
 }
