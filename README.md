@@ -1,6 +1,6 @@
 # admin-express
 
-Express + Mongodb + Mongoose 搭建的博客后台管理系统
+Express + MongoDB + Mongoose 搭建的博客后台管理系统
 
 ## 环境要求
 
